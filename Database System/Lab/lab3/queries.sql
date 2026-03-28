@@ -1,86 +1,101 @@
-create table Course (
+ -- cleaning drop commands
+---DROP TABLE product CASCADE CONSTRAINTS PURGE;
+DROP TABLE category CASCADE CONSTRAINTS PURGE;
+DROP TABLE employee CASCADE CONSTRAINTS PURGE;
+DROP TABLE hr_department CASCADE CONSTRAINTS PURGE;
+DROP TABLE project CASCADE CONSTRAINTS PURGE;
+DROP TABLE instructor CASCADE CONSTRAINTS PURGE;
+DROP TABLE Student2 CASCADE CONSTRAINTS PURGE;
+DROP TABLE department CASCADE CONSTRAINTS PURGE;
+DROP TABLE Student CASCADE CONSTRAINTS PURGE;
+DROP TABLE Courses CASCADE CONSTRAINTS PURGE;
+DROP TABLE Course CASCADE CONSTRAINTS PURGE;
+PURGE RECYCLEBIN;
+
+-- Q1: Create Course Table
+CREATE TABLE Course (
     course_id int primary key,
     course_name varchar2(50) not null,
     credit_hours number
 );
 
-create table Student (
+-- Q2: Create Student Table
+CREATE TABLE Student (
     student_id int primary key,
     student_name varchar2(100) not null,
-    age int check (age >=18)
+    age int check (age >= 18)
 );
 
-alter table Student add status varchar2(20) default 'Active';
+-- Q3 & Q4: Alter Student and Rename Course
+ALTER TABLE Student ADD status varchar2(20) default 'Active';
+ALTER TABLE Course RENAME TO Courses;
 
-alter table course rename to courses;
-
-create table department (
+-- Q5: Department, Student, Instructor modifications
+CREATE TABLE Department (
     dept_id int primary key,
     dept_name varchar2(40) not null
-    );
-    
-create table Student2 (
-    student_id int primary key,
-    student_name varchar2(60) not null,
-    dept_id int,
-    constraint fk_dpet foreign key (dept_id) references department(dept_id),
-    credit_hours number
 );
 
-create table instructor (
+-- Note: Naming this Student2 because Q2 already created a 'Student' table
+CREATE TABLE Student2 (
+    student_id int primary key,
+    student_name varchar2(60), 
+    dept_id int,
+    credit_hours number,
+    constraint fk_dept foreign key (dept_id) references Department(dept_id)
+);
+
+-- Creating Instructor table to fulfill the ALTER requirement
+CREATE TABLE Instructor (
     instructor_id int primary key,
     email varchar2(100)
 );
 
-alter table instructor add constraint ins_email unique (email);
+-- Q5 Modifications:
+ALTER TABLE Instructor ADD constraint ins_email_uq unique (email);
+ALTER TABLE Student2 MODIFY student_name varchar2(100);
+ALTER TABLE Student2 ADD constraint chk_credit_hr check (credit_hours between 1 and 4);
+ALTER TABLE Student2 RENAME COLUMN student_name TO full_name;
 
-alter table student2 modify student_name varchar2(100);
-
-alter table student2 rename column student_name to full_name;
-
-alter table student2 add constraint chk_credit_hr check (credit_hours between 1 and 4);
-
-
-create table project (
+-- Q6: Project Tracking System
+CREATE TABLE Project (
     project_id int primary key,
-    project_name varchar(255) not null,
+    project_name varchar2(255) not null,
     start_date date not null,
     end_date date not null,
-    budget decimal(15, 2),
-    
+    budget number,
     constraint chk_budget check (budget > 10000),    
     constraint chk_dates check (end_date > start_date)
 );
 
--- Question 7
-
-create table department (
-    departmentid int primary key,
-    deptname varchar(100) not null
+-- Q7: Employee and Department 
+-- Note: Naming this Department_Q7 because Q5 already created a 'Department' table
+CREATE TABLE Department_Q7 (
+    dept_id int primary key,
+    dept_name varchar2(100) not null
 );
 
-create table employee (
-    employeeid int primary key,
-    firstname varchar(50),
-    lastname varchar(50),
-    deptid int
+CREATE TABLE Employee (
+    employee_id int primary key,
+    first_name varchar2(50),
+    last_name varchar2(50),
+    dept_id int
 );
 
-desc department;
+-- Enforcing the foreign key:
+ALTER TABLE Employee ADD constraint fk_emp_dept foreign key (dept_id) references Department_Q7(dept_id);
 
-alter table employee add constraint fk_employee_department foreign key (deptid) references department (departmentid);
-
--- Question 8
-create table category (
+-- Q8: Product and Category
+CREATE TABLE Category (
     category_id int primary key,
-    category_name varchar(100) not null
+    category_name varchar2(100) not null
 );
 
-create table product (
+CREATE TABLE Product (
     product_id int primary key,
-    product_name varchar(255) not null unique,
-    price decimal(10, 2) check (price > 0),
+    product_name varchar2(255) not null unique,
+    price number check (price > 0),
     category_id int,
-    status varchar(20) default 'active',
-    constraint fk_product_category foreign key (category_id) references category (category_id)
+    status varchar2(20) default 'Active',
+    constraint fk_prod_cat foreign key (category_id) references Category(category_id)
 );
